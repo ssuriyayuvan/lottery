@@ -7,6 +7,6 @@ const ticket = require('./ticket')
 router.use(express.static('dist'));
 router.use('/user',user);
 router.use('/master',ticketMaster);
-router.use('/ticket', ticket)
+router.use('/ticket', ticket);
 
 module.exports = router;
