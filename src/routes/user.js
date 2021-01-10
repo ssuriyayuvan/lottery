@@ -43,6 +43,16 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
+router.post('/login', async (req, res) => {
+    try {
+        await userCore.login(req, res)
+    } catch (err) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': err.message
+        }, 'user', 500));
+    }
+})
+
 router.delete('/:id', async (req, res) => {
     try {
         await userCore.deleteUser(req, res)

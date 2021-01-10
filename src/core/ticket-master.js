@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const masterSchema = require('../schema/ticket-master');
 const controller = require('../helper/controller')
 
@@ -16,7 +17,7 @@ const masterCore = () => {
 
         async addMaster(req, res) {
             try {
-                let data = req.body.data;
+                let data = req.body.data.attributes;
                 let alreadyExists = await masterSchema.findOne({name: data.name});
                 if(!_.isEmpty(alreadyExists)) return res.status(500).send(controller.errorMsgFormat({
                     'message': 'Ticket already exists'

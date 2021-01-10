@@ -1,11 +1,14 @@
 const Joi = require('joi');
 
-exports.addUser = (req) => {
+exports.purchaseTicket = (req) => {
     let schema = Joi.object().keys(Object.assign({
-        name: Joi.string().required(),
-        mobile: Joi.string().required(),
-        email: Joi.string().email().required(),
-        gender: Joi.string().required(),
+        user_id: Joi.string().required(),
+        ticket_number: Joi.string().required(),
+        ticket_master_id: Joi.string().required(),
+        actual_price: Joi.number().required(),
+        sell_price: Joi.number().required(),
+        show_time: Joi.string().required(),
+        date: Joi.string().required()
     }));
     return schema.validate(req, { abortEarly: false })
 }

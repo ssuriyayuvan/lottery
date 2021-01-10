@@ -4,7 +4,8 @@ mongoose.Promise = global.Promise;
 
 
 const connectDb = async () => {
-    let connectQuery = `mongodb://${process.env.host}:${process.env.port}/${process.env.database_name}`;
+    console.log(process.env.database)
+    let connectQuery = `mongodb://${process.env.host}:${process.env.port}/${process.env.database}`;
 
     try {
         mongoose.connect(connectQuery, {

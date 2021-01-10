@@ -16,11 +16,11 @@ const ticketCore = () => {
 
         async addTickets(req, res) {
             try {
-                let data = req.body.data;
-                let alreadyExists = await ticketSchema.findOne({name: data.name});
-                if(!_.isEmpty(alreadyExists)) return res.status(500).send(controller.errorMsgFormat({
-                    'message': 'Ticket already exists'
-                }, 'ticket', 500));
+                let data = req.body.data.attributes;
+                // let alreadyExists = await ticketSchema.findOne({name: data.name});
+                // if(!_.isEmpty(alreadyExists)) return res.status(500).send(controller.errorMsgFormat({
+                //     'message': 'Ticket already exists'
+                // }, 'ticket', 500));
                 new ticketSchema(data).save();
                 return res.send(controller.successFormat({ message: 'Ticket saved successfully' }))
             } catch (error) {
