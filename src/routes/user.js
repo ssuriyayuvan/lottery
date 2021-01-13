@@ -81,6 +81,16 @@ router.get('/decrypt', async (req, res) => {
             'message': err.message
         }, 'user', 500));
     }
-})
+});
+
+router.patch('/excess/:excess_id', async (req, res) => {
+    try {
+        await userCore.updateUserExcess(req, res);
+    } catch (err) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': err.message
+        }, 'user', 500));
+    }
+});
 
 module.exports = router

@@ -4,24 +4,21 @@ const purchaseCore = require('../core/purchase')
 const controller = require('../helper/controller');
 const purchaseValidation = require('../validation/purchase.validation');
 
-router.post('/:user', async (req, res) => {
+
+router.post('/dashboard', async (req, res) => {
     try {
-        // let { error } = await purchaseValidation.purchaseTicket(req.body.data.attributes);
-        // if (error) {
-        //     console.log('error validation', error)
-        //     return res.status(400).send(controller.errorFormat(error));
-        // }
-        await purchaseCore.purchaseTicket(req, res);
+        console.log('in dash')
+        await purchaseCore.dashboardData(req, res)
     } catch (error) {
         return res.status(500).send(controller.errorMsgFormat({
             'message': error.message
         }, 'purchase', 500));
     }
-});
+})
 
-router.post('/', async (req, res) => {
+router.post('/:user', async (req, res) => {
     try {
-        await ticketCore.addTickets(req, res)
+        await purchaseCore.purchaseTicket(req, res);
     } catch (error) {
         return res.status(500).send(controller.errorMsgFormat({
             'message': error.message
@@ -44,15 +41,15 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
-    try {
-        await ticketCore.deleteTicket(req, res)
-    } catch (error) {
-        return res.status(500).send(controller.errorMsgFormat({
-            'message': error.message
-        }, 'purchase', 500));
-    }
-})
+// router.delete('/:id', async (req, res) => {
+//     try {
+//         await ticketCore.deleteTicket(req, res)
+//     } catch (error) {
+//         return res.status(500).send(controller.errorMsgFormat({
+//             'message': error.message
+//         }, 'purchase', 500));
+//     }
+// })
 
 router.get('/show_wise', async (req, res) => {
     try {

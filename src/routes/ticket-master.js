@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ticketMasterCore = require('../core/ticket-master')
 const controller = require('../helper/controller');
+const masterValidation = require('../validation/master.validation');
 
 router.get('/', async (req, res) => {
     try {
@@ -15,7 +16,11 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        await ticketMasterCore.addMaster(req, res)
+        let { error } = await masterValidation.addTicket(req.body.data.attributes);
+        if (error) {
+            return res.status(400).send(controller.errorFormat(error));
+        }
+        await ticketMasterCore.addMaster(req, res);
     } catch (err) {
         return res.status(500).send(controller.errorMsgFormat({
             'message': err.message
@@ -25,7 +30,7 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
     try {
-        let { error } = await ieoValidation.ieoTokenSale(req.body.data.attributes);
+        let { error } = await masterValidation.addTicket(req.body.data.attributes);
         if (error) {
             return res.status(400).send(controller.errorFormat(error));
         }

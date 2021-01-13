@@ -14,6 +14,17 @@ const ticketCore = () => {
             }
         },
 
+        async getTicketsById(req, res) {
+            try {
+                let result = await ticketSchema.find({master_id: req.params.id});
+                return res.send(controller.successFormat({ data: result }));
+            } catch (error) {
+                return res.status(500).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'user', 500));
+            }
+        },
+
         async addTickets(req, res) {
             try {
                 let data = req.body.data.attributes;
@@ -21,7 +32,7 @@ const ticketCore = () => {
                 // if(!_.isEmpty(alreadyExists)) return res.status(500).send(controller.errorMsgFormat({
                 //     'message': 'Ticket already exists'
                 // }, 'ticket', 500));
-                new ticketSchema(data).save();
+                ticketSchema.insertMany(data);
                 return res.send(controller.successFormat({ message: 'Ticket saved successfully' }))
             } catch (error) {
                 return res.status(500).send(controller.errorMsgFormat({

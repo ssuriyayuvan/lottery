@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const userSchema = require('../schema/users');
 const adminSchema = require('../schema/admin');
+const userExcessSchema = require('../schema/user-excess');
 const controller = require('../helper/controller');
 
 
@@ -13,7 +14,7 @@ const userCore = () => {
                 let skip = req.query.page_no * limit;
                 console.log(skip, limit)
                 let name = req.query.name ? req.query.name : '';
-                let result = await userSchema.find({ name: { $regex: name } }).skip(skip).limit(limit).sort({ _id: -1 });
+                let result = await userSchema.find({ name: { $regex: new RegExp(name, 'i') } }).skip(skip).limit(limit).sort({ _id: -1 });
                 return res.send(controller.successFormat({ count: cnt, data: result }));
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
@@ -30,7 +31,8 @@ const userCore = () => {
                 if (!_.isEmpty(alreadyExists)) return res.status(400).send(controller.errorMsgFormat({
                     'message': 'User already exists'
                 }, 'user', 400));
-                await new userSchema(data).save();
+                let userDetails = await new userSchema(data).save();
+                await new userExcessSchema({ user_id: userDetails._id }).save();
                 return res.send(controller.successFormat({ message: 'User saved successfully' }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
@@ -70,6 +72,19 @@ const userCore = () => {
                     'message': 'Email or password Incorrect!'
                 }, 'user', 400));
                 return res.send(controller.successFormat({ message: 'User login successfully' }))
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'user', 400));
+            }
+        },
+
+        async updateUserExcess(req, res) {
+            try {
+                let data = req.body.data.attributes;
+                let _id = req.params.excess_id;
+                await userExcessSchema.findOneAndUpdate({ _id }, { excess: data.excess });
+                return res.send(controller.successFormat({ message: 'User Excess Update successfully' }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message
