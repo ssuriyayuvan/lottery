@@ -16,6 +16,7 @@ exports.patchUser = (req) => {
         mobile: Joi.string().allow('').optional(),
         email: Joi.string().allow('').optional(),
         gender: Joi.string().allow('').optional(),
+        is_active: Joi.string().valid('Yes','No').allow('').optional(),
     }));
     return schema.validate(req, { abortEarly: false })
 }

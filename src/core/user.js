@@ -14,6 +14,7 @@ const userCore = () => {
                 let skip = req.query.page_no * limit;
                 console.log(skip, limit)
                 let name = req.query.name ? req.query.name : '';
+                // new RegExp(name, 'i') --> for omit case senstive
                 let result = await userSchema.find({ name: { $regex: new RegExp(name, 'i') } }).skip(skip).limit(limit).sort({ _id: -1 });
                 return res.send(controller.successFormat({ count: cnt, data: result }));
             } catch (error) {
