@@ -202,7 +202,7 @@ const purchase = () => {
                 // let date = new Date()
                 let end = moment.utc(data.date).clone().endOf('day').format();
                 let start = moment.utc(data.date).clone().startOf('day').format();
-                console.log('end', user, start, new Date(end), moment.utc(new Date).clone().endOf('day').format())
+                console.log('end', data.user, start, new Date(end), moment.utc(new Date).clone().endOf('day').format())
                 let purchaseData = await purchaseSchema.aggregate([
                     {
                         $project: {
