@@ -45,7 +45,7 @@ const userCore = () => {
         async patchUser(req, res) {
             try {
                 let data = req.body.data.attributes;
-                await userSchema.findOneAndUpdate({ _id: req.params.id, is_active: true }, data);
+                await userSchema.findOneAndUpdate({ _id: req.params.id }, data);
                 return res.send(controller.successFormat({ message: 'User update successfully' }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
@@ -56,7 +56,7 @@ const userCore = () => {
 
         async deleteUser(req, res) {
             try {
-                await userSchema.findByIdAndUpdate({ _id: req.params.id, is_active: true }, { is_active: false });
+                await userSchema.findByIdAndUpdate({ _id: req.params.id }, { is_active: 'No' });
                 return res.send(controller.successFormat({ message: 'User deleted successfully' }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({

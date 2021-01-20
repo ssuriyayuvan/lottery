@@ -199,10 +199,10 @@ const purchase = () => {
         async dashboardData(req, res) {
             try {
                 let data = req.body.data.attributes;
-                console.log(data.user, new Date(data.date))
                 // let date = new Date()
-                let end = moment.utc(new Date).clone().endOf('day').format()
-                console.log('end', new Date(end), moment.utc(new Date).clone().endOf('day').format())
+                let end = moment.utc(data.date).clone().endOf('day').format();
+                let start = moment.utc(data.date).clone().startOf('day').format();
+                console.log('end', user, start, new Date(end), moment.utc(new Date).clone().endOf('day').format())
                 let purchaseData = await purchaseSchema.aggregate([
                     {
                         $project: {
@@ -220,7 +220,7 @@ const purchase = () => {
                                 { 'user_id': mongoose.Types.ObjectId(data.user) },
                                 {
                                     'date': {
-                                        $gt: new Date(data.date),
+                                        $gt: new Date(start),
                                         $lte: new Date(end)
                                     }
                                 },
