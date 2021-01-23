@@ -12,45 +12,47 @@ const purchase = () => {
     return {
         async purchaseTicket(req, res) {
             try {
-                // let data = req.body.data.attributes;
+                let data = req.body.data.attributes;
                 let user_id = req.params.user;
                 let excessStartOf = moment().subtract(1, 'd').startOf('d').format(), excessEndOf = moment().subtract(1, 'd').endOf('d').format();
                 let ticketStartOf = moment().startOf('d').format(), ticketEndOf = moment().endOf('d').format();
-                let excess = await userExcessSchema.findOne({ date: { "$gt": excessStartOf, "$lte": excessEndOf } });
-                console.log(ticketStartOf, ticketEndOf)
+                console.log("StartDate:",excessStartOf);
+                console.log("EndDate:",excessEndOf);
+                let excess = await userExcessSchema.findOne({ date: { $gte: "2021-01-20T00:00:00.000+0000", $lte: "2021-01-20T23:59:59.000+0000" } });
+                console.log(excessStartOf, excessEndOf, new Date(excessStartOf), new Date(excessEndOf))
                 console.log('excess', excess)
                 // let excess = await userExcessSchema.findOne({ user_id: "5ff604bd3b43d904b3ceb8db" });
                 let excessAmount = excess ? excess.excess : 0;
                 // console.log('excess', excess);
-                let data = [
-                    {
-                        "user_id": "5ff604bd3b43d904b3ceb8db",
-                        "ticket_number": "ABCD",
-                        "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
-                        "actual_price": 100,
-                        "sell_price": 90,
-                        "show_time": "11.00",
-                        "date": new Date()
-                    },
-                    {
-                        "user_id": "5ff604bd3b43d904b3ceb8db",
-                        "ticket_number": "C",
-                        "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
-                        "actual_price": 100,
-                        "sell_price": 90,
-                        "show_time": "11.00",
-                        "date": new Date()
-                    },
-                    {
-                        "user_id": "5ff604bd3b43d904b3ceb8db",
-                        "ticket_number": "ABCDEF",
-                        "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
-                        "actual_price": 100,
-                        "sell_price": 90,
-                        "show_time": "11.00",
-                        "date": new Date()
-                    }
-                ];
+                // let data = [
+                // {
+                //     "user_id": "5ff604bd3b43d904b3ceb8db",
+                //     "ticket_number": "ABCD",
+                //     "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
+                //     "actual_price": 100,
+                //     "sell_price": 90,
+                //     "show_time": "11.00",
+                //     "date": new Date()
+                // },
+                //     {
+                //         "user_id": "5ff604bd3b43d904b3ceb8db",
+                //         "ticket_number": "C",
+                //         "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
+                //         "actual_price": 100,
+                //         "sell_price": 90,
+                //         "show_time": "11.00",
+                //         "date": new Date()
+                //     },
+                //     {
+                //         "user_id": "5ff604bd3b43d904b3ceb8db",
+                //         "ticket_number": "ABCDEF",
+                //         "ticket_master_id": "5ff9e853f045cf4f8d6d3d37",
+                //         "actual_price": 100,
+                //         "sell_price": 90,
+                //         "show_time": "11.00",
+                //         "date": new Date()
+                //     }
+                // ];
                 let { status, existingTicket } = await this.checkExistingTicket(data, ticketStartOf, ticketEndOf);
                 if (status == false) {
                     return res.status(400).send(controller.errorMsgFormat({
@@ -59,10 +61,17 @@ const purchase = () => {
                     }, 'purchase', 400));
                 }
                 console.log('Status was', status)
-                // await purchaseSchema.insertMany(data);
+                await purchaseSchema.insertMany(data);
+                // get matched tickets in array
                 let result = await this.matchedTicket(data);
+
+                // get total buying ticket price
                 let ticketPrice = await this.totalTicketPrice(data);
+
+                // add total ticket prize and subract with ticket rate and add with excess amount
                 let outstanding_balance = await this.calculation(result, ticketPrice, excessAmount);
+                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance });
+
                 // let payload = Object.assign({
                 //     user_id,
                 //     outstanding_balance,
@@ -70,7 +79,7 @@ const purchase = () => {
                 //     excess: excessAmount
                 // });
                 // console.log('excess day', excessStartOf, excessEndOf);
-                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance });
+
                 // let userExcess = await userExcessSchema.findOne({ user_id, date: { $gt: excessStartOf, $lte: excessEndOf } });
                 // console.log('userExcess', userExcess);
                 // if (_.isEmpty(userExcess)) {
@@ -105,10 +114,12 @@ const purchase = () => {
                 // console.log('matched tickets', match)
                 !_.isEmpty(match) ? result.push({ combination: match.combination, prize: match.prize, sell_price: data[i].sell_price }) : ''
             }
+            // console.log('result', result)
             return result;
         },
 
         calculation(data, ticketPrice, excessAmount) {
+            console.log(data, ticketPrice, excessAmount)
             try {
                 let prize = 0;
                 for (let i = 0; i < data.length; i++) {

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const purchaseSchema = mongoose.Schema({
-    user_id: { type: mongoose.Types.ObjectId, ref: 'users', required: true, index: true },
+    user_id: { type: mongoose.Types.ObjectId, ref: 'lottery-users', required: true, index: true },
     ticket_number: { type: String, required: true },
     ticket_master_id: { type: mongoose.Types.ObjectId, ref: 'ticket-master', required: true, index: true },
     actual_price: { type: Number, requred: true },
