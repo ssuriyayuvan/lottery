@@ -7,7 +7,8 @@ const masterCore = () => {
     return {
         async getMaster(req, res) {
             try {
-                let result = await masterSchema.find();
+                let name = req.query.name ? req.query.name : '';
+                let result = await masterSchema.find({ name: { $regex: new RegExp(name, 'i') } });
                 return res.send(controller.successFormat({ data: result }));
             } catch (error) {
                 return res.status(500).send(controller.errorMsgFormat({

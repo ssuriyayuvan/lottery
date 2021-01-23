@@ -7,6 +7,7 @@ const userExcessSchema = require('../schema/user-excess');
 const controller = require('../helper/controller');
 const mongoose = require('mongoose');
 const { ISO_8601 } = require('moment');
+const { isEmpty } = require('lodash');
 
 const purchase = () => {
     return {
@@ -14,13 +15,18 @@ const purchase = () => {
             try {
                 let data = req.body.data.attributes;
                 let user_id = req.params.user;
+                let userData = await userSchema.findOne({ _id: user_id });
+                if (isEmpty(userData))
+                    return res.status(400).send(controller.errorMsgFormat({
+                        message: 'User not exists',
+                    }, 'purchase', 400));
                 let excessStartOf = moment().subtract(1, 'd').startOf('d').format(), excessEndOf = moment().subtract(1, 'd').endOf('d').format();
                 let ticketStartOf = moment().startOf('d').format(), ticketEndOf = moment().endOf('d').format();
-                console.log("StartDate:",excessStartOf);
-                console.log("EndDate:",excessEndOf);
-                let excess = await userExcessSchema.findOne({ date: { $gte: "2021-01-20T00:00:00.000+0000", $lte: "2021-01-20T23:59:59.000+0000" } });
-                console.log(excessStartOf, excessEndOf, new Date(excessStartOf), new Date(excessEndOf))
-                console.log('excess', excess)
+                console.log("StartDate:", excessStartOf);
+                console.log("EndDate:", excessEndOf);
+                let excess = await userExcessSchema.findOne({ date: { $gte: new Date(excessStartOf), $lte: new Date(excessEndOf) } });
+                // console.log(excessStartOf, excessEndOf, new Date(excessStartOf), new Date(excessEndOf))
+                // console.log('excess', excess)
                 // let excess = await userExcessSchema.findOne({ user_id: "5ff604bd3b43d904b3ceb8db" });
                 let excessAmount = excess ? excess.excess : 0;
                 // console.log('excess', excess);
@@ -70,27 +76,10 @@ const purchase = () => {
 
                 // add total ticket prize and subract with ticket rate and add with excess amount
                 let outstanding_balance = await this.calculation(result, ticketPrice, excessAmount);
-                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance });
+                let totalBalance = parseInt(userData.outstanding_balance) + parseInt(outstanding_balance)
+                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance: totalBalance });
 
-                // let payload = Object.assign({
-                //     user_id,
-                //     outstanding_balance,
-                //     date: new Date(),
-                //     excess: excessAmount
-                // });
-                // console.log('excess day', excessStartOf, excessEndOf);
-
-                // let userExcess = await userExcessSchema.findOne({ user_id, date: { $gt: excessStartOf, $lte: excessEndOf } });
-                // console.log('userExcess', userExcess);
-                // if (_.isEmpty(userExcess)) {
-                //     console.log('new data', payload);
-                //     new userExcessSchema(payload).save();
-                // } else {
-                //     console.log('already data', userExcess)
-                //     await userExcessSchema.findOneAndUpdate({ user_id }, { outstanding_balance });
-                // }
-                // console.log('total', outstanding_balance)
-                return res.send(controller.successFormat({ message: 'Ticket Purchased successfully', outstanding_balance }))
+                return res.send(controller.successFormat({ message: 'Ticket Purchased successfully', outstanding_balance: totalBalance }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message
@@ -134,10 +123,10 @@ const purchase = () => {
 
         async checkExistingTicket(data, start, end) {
             try {
-                // console.log(start, end)
+                console.log(start, end)
                 let status = true, existingTicket = [];
                 for (let i = 0; i < data.length; i++) {
-                    let existsData = await purchaseSchema.findOne({ ticket_number: data[i].ticket_number, date: { $gt: start, $lte: end } });
+                    let existsData = await purchaseSchema.findOne({ ticket_number: data[i].ticket_number, date: { $gt: new Date(start), $lte: new Date(end) } });
                     console.log('existsData', existsData, data[i].ticket_number)
                     if (!_.isEmpty(existsData)) {
                         status = false, existingTicket.push(data[i].ticket_number)

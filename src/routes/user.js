@@ -83,9 +83,29 @@ router.get('/decrypt', async (req, res) => {
     }
 });
 
-router.patch('/excess/:excess_id', async (req, res) => {
+router.patch('/excess/:user_id', async (req, res) => {
     try {
         await userCore.updateUserExcess(req, res);
+    } catch (err) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': err.message
+        }, 'user', 500));
+    }
+});
+
+router.patch('/balance/:user_id', async (req, res) => {
+    try {
+        await userCore.balanceUpdate(req, res);
+    } catch (err) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': err.message
+        }, 'user', 500));
+    }
+});
+
+router.get('/date-check', async (req, res) => {
+    try {
+        await userCore.dateCheck(req, res);
     } catch (err) {
         return res.status(500).send(controller.errorMsgFormat({
             'message': err.message

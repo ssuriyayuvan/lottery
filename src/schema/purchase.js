@@ -7,7 +7,7 @@ const purchaseSchema = mongoose.Schema({
     actual_price: { type: Number, requred: true },
     sell_price: { type: Number, requred: true },
     show_time: { type: String, requred: true, index: true },
-    date: { type: Date, index: true },
+    date: { type: Date, index: true, default: new Date },
     is_active: { type: Boolean, default: true }
 }, {
     timestamps: { createdAt: 'created_date', updatedAt: 'modified_date' }

@@ -83,9 +83,39 @@ const userCore = () => {
         async updateUserExcess(req, res) {
             try {
                 let data = req.body.data.attributes;
-                let _id = req.params.excess_id;
-                await userExcessSchema.findOneAndUpdate({ _id }, { excess: data.excess });
+                let user_id = req.params.user_id;
+                await userExcessSchema.findOneAndUpdate({ user_id }, { excess: data.excess });
                 return res.send(controller.successFormat({ message: 'User Excess Update successfully' }))
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'user', 400));
+            }
+        },
+
+        async balanceUpdate(req, res) {
+            try {
+                let data = req.body.data.attributes;
+                let user_id = req.params.user_id;
+                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance: data.outstanding_balance });
+                return res.send(controller.successFormat({ message: 'User Excess Update successfully' }))
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'user', 400));
+            }
+        },
+
+        async dateCheck(req, res) {
+            try {
+                let date = req.query.date;
+                console.log(date)
+                let a = {
+                    date,
+                    new: new Date(date)
+                }
+                console.log(a)
+                return res.send(controller.successFormat({ message: a }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message
