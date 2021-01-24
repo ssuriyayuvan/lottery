@@ -90,7 +90,7 @@ const purchase = () => {
         async totalTicketPrice(data) {
             let total_ticket_price = 0;
             for (let i = 0; i < data.length; i++) {
-                total_ticket_price += data[i].sell_price;
+                total_ticket_price += parseInt(data[i].sell_price);
             }
             return total_ticket_price;
         },
@@ -114,7 +114,8 @@ const purchase = () => {
                 for (let i = 0; i < data.length; i++) {
                     prize += data[i].prize;
                 }
-                let total = (prize - ticketPrice) + excessAmount
+                console.log(prize, ticketPrice, excessAmount)
+                let total = (parseInt(prize) - parseInt(ticketPrice)) + parseInt(excessAmount)
                 return total;
             } catch (error) {
 
