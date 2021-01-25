@@ -5,7 +5,7 @@ const db = require('./config/db.config');
 const routes = require('./src/routes');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-db.connect()
+// db.connect()
 
 app.use(cors());
 app.use(bodyParser.json());
