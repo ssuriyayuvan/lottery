@@ -51,6 +51,16 @@ router.patch('/:id', async (req, res) => {
 //     }
 // })
 
+router.get('/purchase-calculation', async (req, res) => {
+    try {
+        await purchaseCore.purchaseCalculation(req, res)
+    } catch (error) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': error.message
+        }, 'purchase', 500));
+    }
+});
+
 router.get('/show_wise', async (req, res) => {
     try {
         await purchaseCore.showWiseCalculation(req, res)

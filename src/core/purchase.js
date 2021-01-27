@@ -19,15 +19,15 @@ const purchase = () => {
                     return res.status(400).send(controller.errorMsgFormat({
                         message: 'User not exists',
                     }, 'purchase', 400));
-                let excessStartOf = moment().subtract(1, 'd').startOf('d').format(), excessEndOf = moment().subtract(1, 'd').endOf('d').format();
+                // let excessStartOf = moment().subtract(1, 'd').startOf('d').format(), excessEndOf = moment().subtract(1, 'd').endOf('d').format();
                 let ticketStartOf = moment().startOf('d').format(), ticketEndOf = moment().endOf('d').format();
-                console.log("StartDate:", excessStartOf);
-                console.log("EndDate:", excessEndOf);
-                let excess = await userExcessSchema.findOne({ date: { $gte: new Date(excessStartOf), $lte: new Date(excessEndOf) } });
+                // console.log("StartDate:", excessStartOf);
+                // console.log("EndDate:", excessEndOf);
+                // let excess = await userExcessSchema.findOne({ date: { $gte: new Date(excessStartOf), $lte: new Date(excessEndOf) } });
                 // console.log(excessStartOf, excessEndOf, new Date(excessStartOf), new Date(excessEndOf))
                 // console.log('excess', excess)
                 // let excess = await userExcessSchema.findOne({ user_id: "5ff604bd3b43d904b3ceb8db" });
-                let excessAmount = excess ? excess.excess : 0;
+                // let excessAmount = excess ? excess.excess : 0;
                 // console.log('excess', excess);
                 // let data = [
                 // {
@@ -68,17 +68,17 @@ const purchase = () => {
                 console.log('Status was', status)
                 await purchaseSchema.insertMany(data);
                 // get matched tickets in array
-                let result = await this.matchedTicket(data);
+                // let result = await this.matchedTicket(data);
 
-                // get total buying ticket price
-                let ticketPrice = await this.totalTicketPrice(data);
+                // // get total buying ticket price
+                // let ticketPrice = await this.totalTicketPrice(data);
 
-                // add total ticket prize and subract with ticket rate and add with excess amount
-                let outstanding_balance = await this.calculation(result, ticketPrice, excessAmount);
-                let totalBalance = parseInt(userData.outstanding_balance) + parseInt(outstanding_balance)
-                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance: totalBalance });
+                // // add total ticket prize and subract with ticket rate and add with excess amount
+                // let outstanding_balance = await this.calculation(result, ticketPrice, excessAmount);
+                // let totalBalance = parseInt(userData.outstanding_balance) + parseInt(outstanding_balance)
+                // await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance: totalBalance });
 
-                return res.send(controller.successFormat({ message: 'Ticket Purchased successfully', outstanding_balance: totalBalance }))
+                return res.send(controller.successFormat({ message: 'Ticket Purchased successfully', outstanding_balance: 0 }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message
@@ -113,11 +113,66 @@ const purchase = () => {
                 for (let i = 0; i < data.length; i++) {
                     prize += data[i].prize;
                 }
-                console.log(prize, ticketPrice, excessAmount)
                 let total = (parseInt(prize) - parseInt(ticketPrice)) + parseInt(excessAmount)
                 return total;
             } catch (error) {
 
+            }
+        },
+
+        winningAmount(data) {
+            try {
+                let prize = 0;
+                for (let i = 0; i < data.length; i++) {
+                    prize += data[i].prize;
+                }
+                let total = parseInt(prize)
+                return total;
+            } catch (error) {
+
+            }
+        },
+
+        async purchaseCalculation(req, res) {
+            try {
+                let data = req.query;
+                console.log('data', data)
+                let end = moment.utc(data.date).clone().endOf('day').format();
+                let start = moment.utc(data.date).clone().startOf('day').format();
+                let purchaseData = await purchaseSchema.find({
+                    user_id: (data.user) ? data.user : { $exists: true },
+                    date: data.date ? {
+                        $gt: new Date(start),
+                        $lte: new Date(end)
+                    } : { $exists: true },
+                    ticket_master_id: (data.ticket) ? (data.ticket) : { $exists: true }
+                }).populate({ path: 'ticket_master_id', select: 'name' }).lean();
+                for (let i = 0; i < purchaseData.length; i++) {
+                    purchaseData[i]['ticket_name'] = purchaseData[i].ticket_master_id.name
+                }
+                console.log(purchaseData);
+                let matchTicket = await this.matchedTicket(purchaseData);
+                let ticketPrice = await this.totalTicketPrice(purchaseData);
+                let winningAmount = await this.winningAmount(matchTicket)
+                console.log(ticketPrice, winningAmount, parseInt(winningAmount) - parseInt(ticketPrice));
+                let excess = await userExcessSchema.findOne({ user_id: data.user });
+                let excessAmount = excess ? excess.excess : 0;
+                console.log('calc... ', winningAmount, ticketPrice, excess, (parseInt(winningAmount) - parseInt(ticketPrice)) + Number(excess))
+                let total = (parseInt(winningAmount) - parseInt(ticketPrice)) + Number(excessAmount);
+                data.user ? await userSchema.findOneAndUpdate({ _id: data.user }, { outstanding_balance: total }) : ''
+                let result = Object.assign({
+                    purchase: purchaseData,
+                    excessAmount,
+                    winningAmount,
+                    ticketPrice,
+                    total,
+                    winningTicket: matchTicket
+                });
+                return res.send(result);
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'purchase', 400));
             }
         },
 
