@@ -20,17 +20,17 @@ const masterCore = () => {
         async addMaster(req, res) {
             try {
                 let data = req.body.data.attributes;
-                let masterData = data[0];
-                let ticketData = data[1];
-                let alreadyExists = await masterSchema.findOne({ name: masterData.name });
+                // let masterData = data[0];
+                // let ticketData = data[1];
+                let alreadyExists = await masterSchema.findOne({ name: data.name });
                 if (!_.isEmpty(alreadyExists)) return res.status(500).send(controller.errorMsgFormat({
                     'message': 'Ticket already exists'
                 }, 'master', 500));
-                let masterRes = await new masterSchema(masterData).save();
-                for (let i = 0; i < ticketData.length; i++) {
-                    ticketData[i]['master_id'] = masterRes._id;
-                }
-                await ticketSchema.insertMany(ticketData);
+                await new masterSchema(data).save();
+                // for (let i = 0; i < ticketData.length; i++) {
+                //     ticketData[i]['master_id'] = masterRes._id;
+                // }
+                // await ticketSchema.insertMany(ticketData);
                 return res.send(controller.successFormat({ message: 'Ticket saved successfully' }))
             } catch (error) {
                 return res.status(500).send(controller.errorMsgFormat({

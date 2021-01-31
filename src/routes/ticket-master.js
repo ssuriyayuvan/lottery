@@ -16,10 +16,10 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        // let { error } = await masterValidation.addTicket(req.body.data.attributes);
-        // if (error) {
-        //     return res.status(400).send(controller.errorFormat(error));
-        // }
+        let { error } = await masterValidation.addTicket(req.body.data.attributes);
+        if (error) {
+            return res.status(400).send(controller.errorFormat(error));
+        }
         await ticketMasterCore.addMaster(req, res);
     } catch (err) {
         return res.status(500).send(controller.errorMsgFormat({
