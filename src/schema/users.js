@@ -11,6 +11,6 @@ const userSchema = mongoose.Schema({
     timestamps: { createdAt: 'created_date', updatedAt: 'modified_date' }
 });
 
-let users = mongoose.model('lottery-users', userSchema);
+let users = mongoose.model('users', userSchema);
 users.createIndexes();
 module.exports = users;
