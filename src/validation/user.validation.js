@@ -16,7 +16,14 @@ exports.patchUser = (req) => {
         mobile: Joi.string().allow('').optional(),
         email: Joi.string().allow('').optional(),
         gender: Joi.string().allow('').optional(),
-        is_active: Joi.string().valid('Yes','No').allow('').optional(),
+        is_active: Joi.string().valid('Yes', 'No').allow('').optional(),
+    }));
+    return schema.validate(req, { abortEarly: false })
+}
+
+exports.balanceUpdate = (req) => {
+    let schema = Joi.object().keys(Object.assign({
+        outstanding_balance: Joi.number().required()
     }));
     return schema.validate(req, { abortEarly: false })
 }

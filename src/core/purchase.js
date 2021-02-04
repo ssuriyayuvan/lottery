@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const moment = require('moment');
+const mongoose = require('mongoose');
 const userSchema = require('../schema/users');
 const ticketSchema = require('../schema/ticket');
 const purchaseSchema = require('../schema/purchase');
 const userExcessSchema = require('../schema/user-excess');
 const controller = require('../helper/controller');
-const mongoose = require('mongoose');
-const { isEmpty } = require('lodash');
+const moduleSchema = require('../schema/purchase-module');
 
 const purchase = () => {
     return {
@@ -210,40 +210,65 @@ const purchase = () => {
             }
         },
 
-        async dateWiseCalculation(req, res) {
+        async ticketChecking(data) {
             try {
-                // let user = req.params.user;
-                let user_id = "5ff604bd3b43d904b3ceb8db";
-                let date = req.query.date ? req.query.date : moment().format();
-                console.log('date', moment().format())
-                let startOf = moment(date).startOf('d').format(), endOf = moment(date).endOf('d').format();
-                let excessStartOf = moment(date).subtract(1, 'd').startOf('d').format(), excessEndOf = moment(date).subtract(1, 'd').endOf('d').format();
-                console.log(excessStartOf, excessEndOf)
-                let excess = await userExcessSchema.findOne({ date: { $gt: excessStartOf, $lte: excessEndOf } });
-                console.log('excess', excess)
-                let excessAmount = excess ? excess.excess : 0;
-                console.log(startOf, endOf)
-                let purchaseData = await purchaseSchema.find({ created_date: { $gt: startOf, $lte: endOf } });
-                let result = await this.matchedTicket(purchaseData);
-                console.log(result, excessAmount);
-                let ticketPrice = await this.totalTicketPrice(purchaseData);
-                let outstanding_balance = await this.calculation(result, ticketPrice, excessAmount);
-                console.log(outstanding_balance);
-                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance });
-                // let userExcessData = await userExcessSchema.findOne({ user_id, date: { $gt: startOf, $lte: endOf } });
-                // let payload = Object.assign({
-                //     user_id,
-                //     outstanding_balance,
-                //     date: new Date(),
-                //     excess: excessAmount
-                // })
-                // if (_.isEmpty(userExcessData)) {
-                //     new userExcessSchema(payload).save();
-                // } else {
-                //     await userExcessSchema.findOneAndUpdate({ user_id }, { outstanding_balance });
-                // }
-                // await userExcessSchema.findOneAndUpdate({ user_id }, { outstanding_balance });
-                return res.send({ data: purchaseData });
+                let existsData = await moduleSchema.findOne({ ticket: data.ticket, winning_number: data.winning_number, show_time: data.show_time, date: new Date(data.date) })
+                console.log(existsData)
+                _.isEmpty(existsData) ? msg = { status: true } : msg = { status: false }
+                return msg;
+            } catch (error) {
+                return { status: false }
+            }
+        },
+
+        async winningAnnouncement(req, res) {
+            try {
+                let data = req.body.data.attributes;
+                let checkExistsData = await this.ticketChecking(data);
+                console.log('checkExistsData', data)
+                if (checkExistsData.status == false) {
+                    return res.status(400).send(controller.errorMsgFormat({
+                        message: 'Ticket already exists',
+                    }, 'purchase', 400));
+                }
+                await new moduleSchema(data).save();
+                return res.send(controller.successFormat({ message: 'Winning Announcement added successfully' }));
+            } catch (error) {
+                console.log('error', error.message)
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'purchase', 400));
+            }
+        },
+
+        async editWinningNumber(req, res) {
+            try {
+                let data = req.body.data.attributes;
+                let checkData = await moduleSchema.findOne({ _id: req.params.id });
+                if (_.isEmpty(checkData)) {
+                    return res.status(400).send(controller.errorMsgFormat({
+                        message: 'Winning Announcement record not found',
+                    }, 'purchase', 400));
+                }
+                await moduleSchema.findOneAndUpdate({ _id: req.params.id }, data);
+                return res.send(controller.successFormat({ message: 'Winning Announcement changed successfully' }));
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'purchase', 400));
+            }
+        },
+
+        async removeWinningAnnouncement(req, res) {
+            try {
+                let checkData = await moduleSchema.findOne({ _id: req.params.id });
+                if (_.isEmpty(checkData)) {
+                    return res.status(400).send(controller.errorMsgFormat({
+                        message: 'Winning Announcement record not found',
+                    }, 'purchase', 400));
+                }
+                await moduleSchema.deleteOne({ _id: req.params.id });
+                return res.send(controller.successFormat({ message: 'Winning Announcement deleted successfully' }));
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message

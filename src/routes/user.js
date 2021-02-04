@@ -95,6 +95,10 @@ router.patch('/excess/:user_id', async (req, res) => {
 
 router.patch('/balance/:user_id', async (req, res) => {
     try {
+        let { error } = await userValidation.balanceUpdate(req.body.data.attributes);
+        if (error) {
+            return res.status(400).send(controller.errorFormat(error));
+        }
         await userCore.balanceUpdate(req, res);
     } catch (err) {
         return res.status(500).send(controller.errorMsgFormat({

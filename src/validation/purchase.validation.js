@@ -22,3 +22,20 @@ exports.patchUser = (req) => {
     }));
     return schema.validate(req, { abortEarly: false })
 }
+
+exports.addWinningAnnouncement = (req) => {
+    let schema = Joi.object().keys(Object.assign({
+        ticket: Joi.string().required(),
+        winning_number: Joi.string().required(),
+        show_time: Joi.string().required(),
+        date: Joi.string().required(),
+    }));
+    return schema.validate(req, { abortEarly: false })
+}
+
+exports.patchWinningAnnouncement = (req) => {
+    let schema = Joi.object().keys(Object.assign({
+        winning_number: Joi.string().required(),
+    }));
+    return schema.validate(req, { abortEarly: false })
+}

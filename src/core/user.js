@@ -97,8 +97,13 @@ const userCore = () => {
             try {
                 let data = req.body.data.attributes;
                 let user_id = req.params.user_id;
-                await userSchema.findOneAndUpdate({ _id: user_id }, { outstanding_balance: data.outstanding_balance });
-                return res.send(controller.successFormat({ message: 'User Excess Update successfully' }))
+                let checkUser = await userSchema.findOne({ _id: user_id });
+                if (_.isEmpty(checkUser)) return res.status(400).send(controller.errorMsgFormat({
+                    'message': 'User not found..!'
+                }, 'user', 400));
+                checkUser.outstanding_balance = data.outstanding_balance;
+                checkUser.save();
+                return res.send(controller.successFormat({ message: 'User Balance Updated successfully' }))
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message
