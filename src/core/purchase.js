@@ -15,7 +15,7 @@ const purchase = () => {
                 let data = req.body.data.attributes;
                 let user_id = req.params.user;
                 let userData = await userSchema.findOne({ _id: user_id });
-                if (isEmpty(userData))
+                if (_.isEmpty(userData))
                     return res.status(400).send(controller.errorMsgFormat({
                         message: 'User not exists',
                     }, 'purchase', 400));
@@ -252,6 +252,21 @@ const purchase = () => {
                 }
                 await moduleSchema.findOneAndUpdate({ _id: req.params.id }, data);
                 return res.send(controller.successFormat({ message: 'Winning Announcement changed successfully' }));
+            } catch (error) {
+                return res.status(400).send(controller.errorMsgFormat({
+                    'message': error.message
+                }, 'purchase', 400));
+            }
+        },
+
+        async getWinningNumber(req, res) {
+            try {
+                let data = req.query.id ? req.query.id : { $exists: true };
+                let list = await moduleSchema.find({ _id: data }).populate({
+                    path: 'ticket',
+                    select: 'name'
+                })
+                return res.send(controller.successFormat({ data: list }));
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
                     'message': error.message

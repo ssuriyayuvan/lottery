@@ -110,6 +110,16 @@ router.delete('/winning-announcement/:id', async (req, res) => {
     }
 })
 
+router.get('/winning-announcement', async (req, res) => {
+    try {
+        await purchaseCore.getWinningNumber(req, res)
+    } catch (error) {
+        return res.status(500).send(controller.errorMsgFormat({
+            'message': error.message
+        }, 'purchase', 500));
+    }
+})
+
 router.post('/:user', async (req, res) => {
     try {
         await purchaseCore.purchaseTicket(req, res);
