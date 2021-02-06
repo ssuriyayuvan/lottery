@@ -261,11 +261,12 @@ const purchase = () => {
 
         async getWinningNumber(req, res) {
             try {
-                let data = req.query.id ? req.query.id : { $exists: true };
-                let list = await moduleSchema.find({ _id: data }).populate({
+                let date = req.query.date ? req.query.date : new Date;
+                let show_time = req.query.show_time ? req.query.show_time : { $exists: true };
+                let list = await moduleSchema.find({ date: new Date(date), show_time: show_time }).populate({
                     path: 'ticket',
                     select: 'name'
-                })
+                });
                 return res.send(controller.successFormat({ data: list }));
             } catch (error) {
                 return res.status(400).send(controller.errorMsgFormat({
