@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const purchaseSchema = mongoose.Schema({
-    ticket: { type: mongoose.Schema.Types.ObjectId, ref: 'tickets-masters', required: true, index: true },
+    ticket: { type: mongoose.Schema.Types.ObjectId, ref: 'ticket-masters', required: true, index: true },
     winning_number: { type: String, },
     show_time: { type: String, index: true },
     date: { type: Date, index: true, default: new Date },
