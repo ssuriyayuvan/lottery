@@ -327,12 +327,12 @@ const purchase = () => {
                         }
                     },
                     {
-                        "$group": { "_id": "$ticket_master_id", qty: { $sum: 1 }, value: { $sum: "$sell_price" }, date: { $first: "$date" }, rate: { $first: "$sell_price" }, purchaseTickets: { $push: { ticket_number: '$ticket_number', actual_price: '$actual_price', sell_price: '$sell_price' } } }
+                        "$group": { "_id": "$ticket_master_id", qty: { $sum: 1 }, show_time: { $first: '$show_time' }, value: { $sum: "$sell_price" }, date: { $first: "$date" }, rate: { $first: "$sell_price" }, purchaseTickets: { $push: { ticket_number: '$ticket_number', actual_price: '$actual_price', sell_price: '$sell_price' } } }
                     },
                     { $lookup: { from: 'ticket-masters', localField: '_id', foreignField: '_id', as: 'master' } },
                     { $unwind: '$master' },
                     { $addFields: { 'name': '$master.name' } },
-                    { $project: { 'qty': 1, 'value': 1, 'date': 1, '_id': 0, 'name': 1, 'rate': 1, 'purchaseTickets': 1 } }
+                    { $project: { 'qty': 1, 'value': 1, 'date': 1, '_id': 0, 'name': 1, 'rate': 1, 'purchaseTickets': 1, 'show_time': 1 } }
                 ])
                 let excessStartOf = moment(data.date).subtract(1, 'd').startOf('d').format(), excessEndOf = moment(data.date).subtract(1, 'd').endOf('d').format();
                 let excessData = await userExcessSchema.findOne({ date: { "$gt": excessStartOf, "$lte": excessEndOf } });
